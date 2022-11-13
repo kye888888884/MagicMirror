@@ -1,5 +1,6 @@
 import cv2
 from cvzone.HandTrackingModule import HandDetector
+import socket
 
 # Parameters
 width, height = 1280, 720
@@ -11,6 +12,10 @@ capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
 # Hand Detector
 detector = HandDetector(maxHands=2, detectionCon=0.8)
+
+# Communication
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+serverAddressPort = ("127.0.0.1", 5052)
 
 while cv2.waitKey(1) != ord('q'):
     # Get the frame from the webcam
@@ -26,9 +31,9 @@ while cv2.waitKey(1) != ord('q'):
         hand = hands[0]
         # Get the landmark list
         lmList = hand['lmList']
-        print(lmList)
         for lm in lmList:
-            data.extend([lm[0], height - lm[1], lm[3]])
+            data.extend([lm[0], height - lm[1], lm[2]])
+        sock.sendto(str.encode(str(data)), serverAddressPort)
 
     # Draw result
     cv2.imshow("VideoFrame", img)
